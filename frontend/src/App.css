@@ -1,8 +1,6 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+
+body {
+  background-color: #2d2d2d; /* grey background */
 }
 
 .logo {
@@ -39,4 +37,203 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Full page centering */
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #fff1f1, #ffe5e5);
+  font-family: sans-serif;
+}
+
+/* Container */
+.container {
+  text-align: center;
+}
+
+/* Title */
+.title {
+  margin-bottom: 30px;
+  font-size: 32px;
+}
+
+/* Envelope row */
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Envelope image */
+.envelope {
+  width: 260px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  border-radius: 10px;
+}
+
+.envelope:hover {
+  transform: scale(1.05);
+}
+
+/* Envelope choice page - improved view */
+.envelope-choice-page {
+  padding: 32px 24px 40px;
+  background: radial-gradient(
+    ellipse 120% 80% at 50% 50%,
+    rgba(214, 40, 40, 0.06) 0%,
+    rgba(214, 40, 40, 0.02) 40%,
+    transparent 70%
+  );
+  border-radius: 20px;
+  position: relative;
+}
+
+
+.envelope-choice-page .choice-title {
+  margin-bottom: 8px;
+  font-size: 1.1em;
+  position: relative;
+  z-index: 20;
+}
+
+.envelope-choice-page .choice-hint {
+  margin-bottom: 28px;
+  font-size: 0.9em;
+  opacity: 0.85;
+  position: relative;
+  z-index: 20;
+  display: block;
+}
+
+/* Envelope stack with arrows */
+.envelope-stack-wrapper {
+  margin: 0 auto;
+  padding: 28px 20px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 0, 0, 0.08) 0%,
+    transparent 70%
+  );
+  border-radius: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Round table - envelopes fanned with focused one in front */
+.envelope-round-table {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.envelope-round-table .envelope-item {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  cursor: pointer;
+  transition:
+    transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    filter 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    outline 0.4s ease,
+    outline-offset 0.4s ease;
+  border-radius: 12px;
+  transform-origin: center bottom;
+}
+
+/* Unfocused: smaller, behind, centered in middle of focused envelope */
+.envelope-round-table .envelope-item--background {
+  z-index: 1;
+  transform: translate(calc(-50% + var(--offset) * 40%), -15%) scale(0.5);
+  opacity: 0.5;
+  filter: brightness(0.95);
+}
+
+.envelope-round-table .envelope-item--background:hover {
+  z-index: 5;
+  opacity: 0.5;
+  filter: brightness(1);
+}
+
+/* Focused: center, same height and aligned */
+.envelope-round-table .envelope-item--focused {
+  z-index: 10;
+  transform: translate(-50%) scale(0.82);
+  outline: 3px solid #d62828;
+  outline-offset: 2px;
+}
+
+.envelope-round-table .envelope-item img,
+.envelope-round-table .envelope-item .ant-image {
+  display: block;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* Arrow buttons for envelope focus - Ant Design Button overrides */
+.envelope-stack-wrapper .arrow.ant-btn {
+  flex-shrink: 0;
+}
+
+/* Status text */
+.status {
+  margin-top: 30px;
+  font-size: 18px;
+}
+
+/* Touch-friendly on mobile */
+@media (max-width: 576px) {
+  .envelope-round-table .envelope-item {
+    touch-action: manipulation;
+  }
+
+  .envelope-stack-wrapper .arrow.ant-btn {
+    touch-action: manipulation;
+  }
+  .envelope-choice-page {
+    padding: 20px 16px 24px;
+    border-radius: 16px;
+  }
+
+  .envelope-choice-page .choice-title {
+    font-size: 1em;
+  }
+
+  .envelope-choice-page .choice-hint {
+    margin-bottom: 16px;
+    font-size: 0.85em;
+  }
+
+  .envelope-stack-wrapper {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .envelope-round-table .envelope-item--background {
+    transform: translate(calc(-50% + var(--offset) * 35%), -15%) scale(0.5);
+  }
+
+  .main-card.ant-card {
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  .envelope-choice-page {
+    padding: 16px 12px 20px;
+  }
+
+  .envelope-stack-wrapper {
+    padding: 12px 8px;
+  }
+
+  .envelope-round-table .envelope-item--background {
+    transform: translate(calc(-50% + var(--offset) * 30%), -15%) scale(0.48);
+  }
 }

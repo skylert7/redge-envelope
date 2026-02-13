@@ -8,7 +8,9 @@
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^4.22.1",
+    "geoip-lite": "^1.4.10",
     "mysql2": "^3.17.1",
+    "nodemon": "^3.1.11",
     "ua-parser-js": "^1.0.41"
   }
 }
