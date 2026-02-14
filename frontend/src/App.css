@@ -1,6 +1,6 @@
 
 body {
-  background-color: #2d2d2d; /* grey background */
+  background-color: #f5f5f0; /* off-white background */
 }
 
 .logo {
@@ -77,7 +77,34 @@ body {
 }
 
 .envelope:hover {
-  transform: scale(1.05);
+  transform: scale(1.25);
+}
+
+/* Form disappears instantly; envelope transitions in after submit */
+.name-form-section--hidden {
+  display: none;
+}
+
+.envelope-choice-page {
+  opacity: 1;
+}
+
+/* Staggered reveal: each part fades in with delay */
+.choice-reveal {
+  opacity: 0;
+  animation: partReveal 0.5s ease-out forwards;
+  animation-fill-mode: both;
+}
+
+@keyframes partReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Envelope choice page - improved view */
@@ -104,16 +131,21 @@ body {
 .envelope-choice-page .choice-hint {
   margin-bottom: 28px;
   font-size: 0.9em;
-  opacity: 0.85;
   position: relative;
   z-index: 20;
   display: block;
 }
 
-/* Envelope stack with arrows */
+.envelope-choice-page .choice-hint:not(.choice-reveal) {
+  opacity: 0.85;
+}
+
+/* Envelope stack */
 .envelope-stack-wrapper {
   margin: 0 auto;
   padding: 28px 20px;
+  display: flex;
+  justify-content: center;
   background: radial-gradient(
     circle at 50% 50%,
     rgba(0, 0, 0, 0.08) 0%,
@@ -176,10 +208,6 @@ body {
   border-radius: 12px;
 }
 
-/* Arrow buttons for envelope focus - Ant Design Button overrides */
-.envelope-stack-wrapper .arrow.ant-btn {
-  flex-shrink: 0;
-}
 
 /* Status text */
 .status {

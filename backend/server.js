@@ -28,7 +28,8 @@ function getClientIp(req) {
 }
 
 
-app.post("/api/track", async (req, res) => {
+/** Record user's envelope pick with their info. */
+app.post("/api/record-pick", async (req, res) => {
   try {
     const realIp = getClientIp(req);
 
@@ -37,27 +38,22 @@ app.post("/api/track", async (req, res) => {
         ? "1.55.0.1" // Vietnam test IP
         : realIp;
 
-    // Geo lookup
     const geo = geoip.lookup(ip);
     const country = geo?.country || "Unknown";
-
-    let amountOptions;
-
-    if (country === "VN") {
-      amountOptions = [100000, 200000, 260000];
-    } else {
-      amountOptions = [10, 20, 26];
-    }
-
-    const luckyMoney =
-      amountOptions[Math.floor(Math.random() * amountOptions.length)];
 
     const userAgentRaw = req.headers["user-agent"] || "";
     const ua = uaParser(userAgentRaw);
 
     const name = req.body?.name || "Anonymous";
+    const selectedEnvelope = req.body?.selectedEnvelope ?? null;
+    const amount = req.body?.amount ?? null;
     const clientHints = req.body?.clientHints ?? null;
-    const selectedEnvelope = req.body?.selected_envelope ?? null;
+
+    const clientHintsJson = JSON.stringify({
+      ...(clientHints || {}),
+      selectedEnvelope,
+      amount,
+    });
 
     const [result] = await pool.execute(
       `INSERT INTO visits
@@ -68,15 +64,14 @@ app.post("/api/track", async (req, res) => {
         ip,
         userAgentRaw,
         JSON.stringify(ua),
-        luckyMoney,
-        clientHints ? JSON.stringify(clientHints) : null,
+        amount ?? 0,
+        clientHintsJson,
       ]
     );
 
     res.json({
       ok: true,
       id: result.insertId,
-      amount: luckyMoney,
       country,
     });
   } catch (err) {
@@ -85,11 +80,20 @@ app.post("/api/track", async (req, res) => {
   }
 });
 
-app.get("/api/lucky-money", (req, res) => {
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Assign amounts to each envelope at start. Amounts are pre-assigned, not random at pick time. */
+app.get("/api/envelopes", (req, res) => {
   try {
     const realIp = getClientIp(req);
 
-    // Local dev override so you can test VN logic on localhost
     const ip =
       realIp === "127.0.0.1" || realIp === "::1"
         ? "1.55.0.1" // Vietnam test IP
@@ -102,14 +106,12 @@ app.get("/api/lucky-money", (req, res) => {
       ? [100000, 200000, 260000]
       : [10, 20, 26];
 
-    const amount = options[Math.floor(Math.random() * options.length)];
+    const amounts = shuffleArray(options);
 
     res.json({
       ok: true,
-      ip,
+      amounts,
       country,
-      amount,
-      options,
     });
   } catch (err) {
     console.error(err);

@@ -7,7 +7,7 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #2d2d2d; /* grey background */
+  background-color: #f5f5f0; /* off-white background */
 
 }
 
@@ -24,12 +24,12 @@ html, body, #root {
   height: 100%;
   width: 100%;
   margin: 0;
-  background-color: #2d2d2d;
+  background-color: #f5f5f0;
 }
 
 /* iPhone safe area for notch and home indicator */
 body {
-  background-color: #2d2d2d; /* grey background */
+  background-color: #f5f5f0; /* off-white background */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   padding-top: env(safe-area-inset-top);
@@ -59,8 +59,8 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
-/* Keep grey body background regardless of system preference */
+/* Keep off-white body background regardless of system preference */
 :root {
-  background-color: #2d2d2d;
+  background-color: #f5f5f0;
 }
 
