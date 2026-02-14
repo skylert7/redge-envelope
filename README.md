@@ -1,4 +1,4 @@
-# Redge Envelope 🧧
+# Red Envelope for friends and family 🧧
 
 Lunar New Year lucky money app. Pick one of three red envelopes; amounts show in USD or your chosen currency based on geo.
 
