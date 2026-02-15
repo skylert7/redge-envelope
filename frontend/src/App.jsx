@@ -10,7 +10,6 @@ import {
   Grid,
   Row,
   Col,
-  Space,
   Image,
   message,
   Spin,
@@ -143,8 +142,8 @@ export default function App() {
     []
   );
 
-  // Responsive image size (iPhone xs: ~160, sm: 200, md+: 260-320)
-  const imageWidth = screens.xs ? 140 : screens.sm ? 200 : screens.md ? 260 : 320;
+  // Responsive image size (xs: 120 for narrow phones, sm: 200, md+: 260-320)
+  const imageWidth = screens.xs ? 120 : screens.sm ? 200 : screens.md ? 260 : 320;
 
   return (
     <Layout style={{ minHeight: "100vh", background: "#f5f5f0" }}>
@@ -153,37 +152,88 @@ export default function App() {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: screens.xs ? 12 : 20,
+          padding: screens.xs ? 12 : 24,
           paddingBottom: "max(12px, env(safe-area-inset-bottom))",
         }}
       >
-        <Row justify="center" align="middle" style={{ width: "75%" }}>
+        <Row justify="center" align="middle" style={{ width: screens.xs ? "100%" : "75%" }}>
           <Col xs={24} sm={20} md={16} lg={12} xl={10}>
+            <div className="main-card-wrapper">
+              <div className="corner-highlight corner-tl" />
+              <div className="corner-highlight corner-tr" />
+              <div className="corner-highlight corner-bl" />
+              <div className="corner-highlight corner-br" />
             <Card
               bordered={false}
               className="main-card"
-              style={{ textAlign: "center", borderRadius: 20 }}
+              style={{
+                textAlign: "center",
+                borderRadius: screens.xs ? 16 : 20,
+                backgroundColor: "#991b1b",
+                padding: screens.xs ? 16 : 24,
+              }}
             >
-              <Title level={screens.xs ? 3 : 2} className={started ? "choice-reveal" : ""} style={started ? { animationDelay: "0s" } : undefined}>
-                🧧 Lunar New Year Lucky Money 🐎
-              </Title>
+              <div
+                className={`match-btn-width ${screens.xs ? "match-btn-width--mobile" : ""}`}
+                style={{
+                  padding: screens.xs ? "12px 10px" : "16px 12px",
+                  marginBottom: screens.xs ? 16 : 20,
+                  border: "3px solid rgba(255,255,255,0.6)",
+                  borderRadius: screens.xs ? 10 : 12,
+                  backgroundColor: "rgba(255,255,255,0.15)",
+                }}
+              >
+                <Title level={screens.xs ? 3 : 2} 
+                className={started ? "choice-reveal" : ""} 
+                style={{ color: "#ffda6b", fontWeight: 700,
+                  margin: 0, ...(started ? { animationDelay: "0s" } : {}) }}>
+                  🧧 Lunar New Year Lucky Money 🐎
+                </Title>
+              </div>
 
               <div className={`name-form-section ${started ? "name-form-section--hidden" : ""}`}>
-                <Text>Enter your name to receive your lucky money</Text>
-                <br/>
-                <Text>May prosperity follow you!</Text>
+                <Text style={{ color: "#ffffff", fontWeight: "500" }}>Wishing you a year of success and happiness!</Text>
 
-                <Space.Compact style={{ width: "100%", marginTop: 20 }}>
-                  <Input
-                    placeholder="Your Name"
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    onPressEnter={handleStart}
-                  />
-                  <Button type="primary" onClick={handleStart}>
-                    Start
+                <Input
+                  placeholder="Your Name"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  onPressEnter={handleStart}
+                  className={`match-btn-width ${screens.xs ? "match-btn-width--mobile" : ""}`}
+                  style={{ marginTop: screens.xs ? 16 : 20, 
+                    textAlign: "center",
+                    backgroundColor: "#CD071E",
+                    color: "#ffda6b",
+                    fontSize: screens.xs ? "16px" : undefined,
+                  }}
+                />
+                
+                <Text style={{ 
+                  textAlign: "center", 
+                  fontSize: screens.xs ? "0.7rem" : "0.65rem",
+                  color: "#ffffff"
+                  }}
+                >
+                    Enter your name to reveal your lucky money
+                </Text>
+
+                <div style={{ textAlign: "center", marginTop: 12 }}>
+                  <Button
+                    type="primary"
+                    size="large"
+                    className={`open-envelope-btn ${screens.xs ? "open-envelope-btn--mobile" : ""}`}
+                    style={{
+                      background: "radial-gradient(circle at center, #ffda6b 0%, #ffc425 50%, #d4a000 100%)",
+                      borderColor: "#d4a000",
+                      fontWeight: 700,
+                      fontSize: screens.xs ? "1rem" : "1.25rem",
+                      color: "#8b0000",
+                    }}
+                    onClick={handleStart}
+                  >
+                    Open Red Envelope
                   </Button>
-                </Space.Compact>
+                </div>
               </div>
 
               {started && (
@@ -191,10 +241,12 @@ export default function App() {
                   {loadingEnvelopes && (
                     <Spin size="large" style={{ marginBottom: 16 }} />
                   )}
-                  <Text strong className="choice-title choice-reveal" style={{ animationDelay: "0.5s" }}>
+                  <Text strong className="choice-title choice-reveal" 
+                  style={{ color: "#ffffff", animationDelay: "0.5s" }}>
                     Blessings, {name}! Choose your red envelope for good fortune 🧧
                   </Text>
-                  <Text type="secondary" className="choice-hint choice-reveal" style={{ animationDelay: "1s" }}>
+                  <Text type="secondary" className="choice-hint choice-reveal" 
+                  style={{ color: "#ffffff",animationDelay: "1s" }}>
                     {screens.xs
                       ? "Tap or swipe to choose an envelope, then tap Confirm"
                       : "Click an envelope to choose, then click Confirm"}
@@ -244,13 +296,14 @@ export default function App() {
                     onClick={openEnvelope}
                     disabled={!envelopeAmounts}
                     className="choice-reveal"
-                    style={{ marginTop: 24, animationDelay: "2.3s", minWidth: 160 }}
+                    style={{ marginTop: 24, animationDelay: "2.3s" }}
                   >
                     Confirm Choice
                   </Button>
                 </div>
               )}
             </Card>
+            </div>
           </Col>
         </Row>
 
@@ -264,6 +317,8 @@ export default function App() {
             </Button>,
           ]}
           centered
+          width={screens.xs ? "calc(100vw - 32px)" : 520}
+          style={{ maxWidth: "100%" }}
         >
           <Statistic
             title="Lucky Money Amount"

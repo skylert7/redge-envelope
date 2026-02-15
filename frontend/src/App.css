@@ -80,6 +80,39 @@ body {
   transform: scale(1.25);
 }
 
+/* Match width of Open Red Envelope button */
+.match-btn-width {
+  width: 300px !important;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+@media (max-width: 576px) {
+  .match-btn-width--mobile {
+    width: 100% !important;
+    max-width: 100%;
+  }
+}
+
+/* Open Red Envelope button - scale up on hover */
+.open-envelope-btn {
+  transition: transform 0.2s ease;
+  padding: 30px 52px !important;
+  width: 300px !important;
+}
+.open-envelope-btn:hover {
+  transform: scale(1.08);
+}
+
+@media (max-width: 576px) {
+  .open-envelope-btn--mobile {
+    width: 100% !important;
+    padding: 16px 24px !important;
+  }
+}
+
 /* Form disappears instantly; envelope transitions in after submit */
 .name-form-section--hidden {
   display: none;
@@ -250,6 +283,61 @@ body {
   .main-card.ant-card {
     border-radius: 16px;
   }
+
+  .main-card-wrapper {
+    width: 100%;
+  }
+}
+
+/* Corner highlights on main card */
+.main-card-wrapper {
+  position: relative;
+}
+.corner-highlight {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 4px solid #ffda6b;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (max-width: 576px) {
+  .corner-highlight {
+    border-width: 3px;
+  }
+  .corner-tl { border-radius: 8px 8px 8px 8px; }
+  .corner-tr { border-radius: 0 8px 0 0; }
+  .corner-bl { border-radius: 0 0 0 8px; }
+  .corner-br { border-radius: 0 0 8px 0; }
+}
+.corner-tl {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 15px 0 0 0;
+}
+.corner-tr {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+  border-radius: 0 15px 0 0;
+}
+.corner-bl {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+  border-radius: 0 0 0 15px;
+}
+.corner-br {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+  border-radius: 0 0 15px 0;
 }
 
 @media (max-width: 380px) {
