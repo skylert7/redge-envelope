@@ -146,9 +146,10 @@ export default function App() {
   const imageWidth = screens.xs ? 120 : screens.sm ? 200 : screens.md ? 260 : 320;
 
   return (
-    <Layout style={{ minHeight: "100vh", height: "100%", overflow: "auto", background: "#f5f5f0", WebkitOverflowScrolling: "touch" }}>
+    <Layout style={{ minHeight: "100dvh", height: "100%", display: "flex", flexDirection: "column", overflow: "auto", background: "#f5f5f0", WebkitOverflowScrolling: "touch" }}>
       <Content
         style={{
+          flex: 1,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",

@@ -22,6 +22,8 @@ a:hover {
 
 html, body, #root {
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   margin: 0;
   background-color: #f5f5f0;
