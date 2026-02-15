@@ -26,6 +26,14 @@ html, body, #root {
   margin: 0;
   background-color: #f5f5f0;
 }
+html, body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+#root {
+  overflow: hidden;
+}
 
 /* iPhone safe area for notch and home indicator */
 body {
