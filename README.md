@@ -21,6 +21,19 @@ CREATE TABLE visits (
   client_hints JSON,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE sessions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  session_key VARCHAR(64) NOT NULL UNIQUE,
+  ip VARCHAR(45),
+  user_agent_raw TEXT,
+  name VARCHAR(255),
+  shuffle_seed INT NOT NULL,
+  country VARCHAR(10),
+  picked_amount INT,
+  has_picked TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 2. **Backend** — `cd backend`, `npm install`, copy `.env.example` to `.env`, `npm run dev`

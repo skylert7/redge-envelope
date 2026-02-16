@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import confetti from "canvas-confetti";
 import {
   Layout,
   Card,
@@ -48,11 +49,47 @@ export default function App() {
   const [loadingEnvelopes, setLoadingEnvelopes] = useState(false);
   const [isVnd, setIsVnd] = useState(false);
   const [showFirstPage, setShowFirstPage] = useState(false);
+  const [hasAlreadyPicked, setHasAlreadyPicked] = useState(false);
+  const [previousPickedAmount, setPreviousPickedAmount] = useState(null);
 
   useEffect(() => {
     const t = setTimeout(() => setShowFirstPage(true), 800);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    if (!isModalOpen || luckyMoney == null) return;
+
+    // Initial celebratory burst from center
+    confetti({
+      particleCount: 80,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ["#ffda6b", "#C74D4F", "#ffc425", "#ffffff", "#CD071E"],
+    });
+
+    // Side cannons for a few seconds
+    const duration = 2500;
+    const end = Date.now() + duration;
+    const frame = () => {
+      confetti({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ["#ffda6b", "#C74D4F", "#ffc425", "#ffffff"],
+      });
+      confetti({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ["#ffda6b", "#C74D4F", "#ffc425", "#ffffff"],
+      });
+      if (Date.now() < end) requestAnimationFrame(frame);
+    };
+    frame();
+  }, [isModalOpen, luckyMoney]);
 
   const handleStart = async () => {
     const trimmed = nameInput.trim();
@@ -63,38 +100,50 @@ export default function App() {
     setName(trimmed);
     setStarted(true);
     setLoadingEnvelopes(true);
-    const res = await fetch("/api/envelopes");
+    const res = await fetch(`/api/envelopes?name=${encodeURIComponent(trimmed)}`);
     const data = await res.json();
     setLoadingEnvelopes(false);
     if (data.ok) {
       setEnvelopeAmounts(data.amounts);
       setIsVnd(data.country === "VN");
+      setHasAlreadyPicked(!!data.has_picked);
+      setPreviousPickedAmount(data.picked_amount ?? null);
+      if (data.has_picked && data.picked_amount != null) {
+        setLuckyMoney(data.picked_amount);
+        setIsModalOpen(true);
+      }
     } else {
-      message.error("Failed to load envelopes");
+      message.error(data.error || "Failed to load envelopes");
       setStarted(false);
     }
   };
 
   const openEnvelope = async () => {
-    if (envelopeAmounts) {
-      const amount = envelopeAmounts[activeIndex];
-      setLuckyMoney(amount);
-      setIsModalOpen(true);
+    if (!envelopeAmounts || hasAlreadyPicked) return;
+    const amount = envelopeAmounts[activeIndex];
+    setLuckyMoney(amount);
+    setIsModalOpen(true);
 
-      try {
-        await fetch("/api/record-pick", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            selectedEnvelope: activeIndex,
-            amount,
-            clientHints: getClientHints(),
-          }),
-        });
-      } catch (err) {
-        console.error("Failed to record pick:", err);
+    try {
+      const res = await fetch("/api/record-pick", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          selectedEnvelope: activeIndex,
+          amount,
+          clientHints: getClientHints(),
+        }),
+      });
+      const data = await res.json();
+      if (!data.ok && res.status === 409) {
+        setHasAlreadyPicked(true);
+        setPreviousPickedAmount(data.picked_amount);
+        setLuckyMoney(data.picked_amount);
+        setIsModalOpen(true);
       }
+    } catch (err) {
+      console.error("Failed to record pick:", err);
     }
   };
 
@@ -248,65 +297,103 @@ export default function App() {
                   {loadingEnvelopes && (
                     <Spin size="large" style={{ marginBottom: 16 }} />
                   )}
-                  <Text strong className="choice-title choice-reveal" 
-                  style={{ color: "#ffffff", animationDelay: "0.5s" }}>
-                    Blessings, {name}! Choose your red envelope for good fortune 🧧
-                  </Text>
-                  <Text type="secondary" className="choice-hint choice-reveal" 
-                  style={{ color: "#ffffff",animationDelay: "1s" }}>
-                    {screens.xs
-                      ? "Tap or swipe to choose an envelope, then tap Confirm"
-                      : "Click an envelope to choose, then click Confirm"}
-                  </Text>
+                  {hasAlreadyPicked ? (
+                    <>
+                      <Text strong className="choice-title choice-reveal"
+                        style={{ color: "#ffffff", animationDelay: "0.5s" }}>
+                        You've already chosen your envelope, {name}! 🧧
+                      </Text>
+                      <Text className="choice-hint choice-reveal"
+                        style={{ color: "#ffffff", animationDelay: "1s", display: "block", marginTop: 16 }}>
+                        Your lucky money was {isVnd ? "" : "$"}
+                        {previousPickedAmount != null
+                          ? (isVnd
+                              ? Number(previousPickedAmount).toLocaleString("vi-VN") + " ₫"
+                              : Number(previousPickedAmount).toLocaleString())
+                          : "—"}
+                      </Text>
+                      <Button
+                        type="primary"
+                        size="large"
+                        onClick={() => {
+                          setLuckyMoney(previousPickedAmount);
+                          setIsModalOpen(true);
+                        }}
+                        className="choice-reveal"
+                        style={{
+                          marginTop: 24,
+                          animationDelay: "1.5s",
+                          background: "radial-gradient(circle at center, #ffda6b 0%, #ffc425 50%, #d4a000 100%)",
+                          borderColor: "#d4a000",
+                          color: "#8b0000",
+                        }}
+                      >
+                        View Your Lucky Money
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Text strong className="choice-title choice-reveal"
+                        style={{ color: "#ffffff", animationDelay: "0.5s" }}>
+                        Blessings, {name}! Choose your red envelope for good fortune 🧧
+                      </Text>
+                      <Text type="secondary" className="choice-hint choice-reveal"
+                        style={{ color: "#ffffff", animationDelay: "1s" }}>
+                        {screens.xs
+                          ? "Tap or swipe to choose an envelope, then tap Confirm"
+                          : "Click an envelope to choose, then click Confirm"}
+                      </Text>
 
-                  <div
-                    className="envelope-stack-wrapper choice-reveal"
-                    style={{ animationDelay: "2s" }}
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleSwipe}
-                  >
-                    <div
-                      className="envelope-round-table"
-                      style={{ width: imageWidth * 2.2, height: imageWidth * 1.4 }}
-                    >
-                      {envelopes.map((src, idx) => {
-                        const n = envelopes.length;
-                        const prev = (activeIndex - 1 + n) % n;
-                        const next = (activeIndex + 1) % n;
-                        const offset =
-                          idx === activeIndex ? 0 : idx === prev ? -1 : 1;
-                        const isFocused = idx === activeIndex;
-                        return (
-                          <div
-                            key={idx}
-                            className={`envelope-item ${isFocused ? "envelope-item--focused" : "envelope-item--background"}`}
-                            style={{ "--offset": offset }}
-                            onClick={() => handleEnvelopeClick(idx)}
-                          >
-                            <Image
-                              src={src}
-                              alt={`Envelope ${idx + 1}`}
-                              width={imageWidth}
-                              style={{ borderRadius: 12, display: "block" }}
-                              preview={false}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                      <div
+                        className="envelope-stack-wrapper choice-reveal"
+                        style={{ animationDelay: "2s" }}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleSwipe}
+                      >
+                        <div
+                          className="envelope-round-table"
+                          style={{ width: imageWidth * 2.2, height: imageWidth * 1.4 }}
+                        >
+                          {envelopes.map((src, idx) => {
+                            const n = envelopes.length;
+                            const prev = (activeIndex - 1 + n) % n;
+                            const next = (activeIndex + 1) % n;
+                            const offset =
+                              idx === activeIndex ? 0 : idx === prev ? -1 : 1;
+                            const isFocused = idx === activeIndex;
+                            return (
+                              <div
+                                key={idx}
+                                className={`envelope-item ${isFocused ? "envelope-item--focused" : "envelope-item--background"}`}
+                                style={{ "--offset": offset }}
+                                onClick={() => handleEnvelopeClick(idx)}
+                              >
+                                <Image
+                                  src={src}
+                                  alt={`Envelope ${idx + 1}`}
+                                  width={imageWidth}
+                                  style={{ borderRadius: 12, display: "block" }}
+                                  preview={false}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
 
-                  <Button
-                    type="primary"
-                    danger
-                    size="large"
-                    onClick={openEnvelope}
-                    disabled={!envelopeAmounts}
-                    className="choice-reveal"
-                    style={{ marginTop: 24, animationDelay: "2.3s" }}
-                  >
-                    Confirm Choice
-                  </Button>
+                      <Button
+                        type="primary"
+                        danger
+                        size="large"
+                        onClick={openEnvelope}
+                        disabled={!envelopeAmounts}
+                        className="choice-reveal"
+                        style={{ marginTop: 24, animationDelay: "2.3s" }}
+                      >
+                        Confirm Choice
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
             </Card>

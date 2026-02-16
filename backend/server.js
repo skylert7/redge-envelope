@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "crypto";
 import express from "express";
 import mysql from "mysql2/promise";
 import uaParser from "ua-parser-js";
@@ -27,8 +28,13 @@ function getClientIp(req) {
   return req.ip || "";
 }
 
+function getSessionKey(ip, userAgent) {
+  const raw = `${ip || ""}|${userAgent || ""}`;
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
 
-/** Record user's envelope pick with their info. */
+
+/** Record user's envelope pick with their info. Rejects if session already picked. */
 app.post("/api/record-pick", async (req, res) => {
   try {
     const realIp = getClientIp(req);
@@ -38,10 +44,23 @@ app.post("/api/record-pick", async (req, res) => {
         ? "1.55.0.1" // Vietnam test IP
         : realIp;
 
+    const userAgentRaw = req.headers["user-agent"] || "";
+    const sessionKey = getSessionKey(ip, userAgentRaw);
+
+    const [sessionRows] = await pool.execute(
+      `SELECT has_picked, picked_amount FROM sessions WHERE session_key = ?`,
+      [sessionKey]
+    );
+    if (sessionRows.length > 0 && sessionRows[0].has_picked) {
+      return res.status(409).json({
+        ok: false,
+        error: "Already picked",
+        picked_amount: sessionRows[0].picked_amount,
+      });
+    }
+
     const geo = geoip.lookup(ip);
     const country = geo?.country || "Unknown";
-
-    const userAgentRaw = req.headers["user-agent"] || "";
     const ua = uaParser(userAgentRaw);
 
     const name = req.body?.name || "Anonymous";
@@ -69,6 +88,11 @@ app.post("/api/record-pick", async (req, res) => {
       ]
     );
 
+    await pool.execute(
+      `UPDATE sessions SET has_picked = 1, picked_amount = ?, name = ? WHERE session_key = ?`,
+      [amount ?? 0, name, sessionKey]
+    );
+
     res.json({
       ok: true,
       id: result.insertId,
@@ -80,38 +104,73 @@ app.post("/api/record-pick", async (req, res) => {
   }
 });
 
-function shuffleArray(arr) {
+function seededRandom(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
+function shuffleArrayWithSeed(arr, seed) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    seed = (seed * 9301 + 49297) % 233280;
+    const j = Math.floor(seededRandom(seed) * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
 
-/** Assign amounts to each envelope at start. Amounts are pre-assigned, not random at pick time. */
-app.get("/api/envelopes", (req, res) => {
+/** Assign amounts to each envelope at start. Amounts are pre-assigned, not random at pick time.
+ *  Session is persisted by IP + user agent so the same visitor gets the same amounts on refresh.
+ */
+app.get("/api/envelopes", async (req, res) => {
   try {
     const realIp = getClientIp(req);
-
     const ip =
       realIp === "127.0.0.1" || realIp === "::1"
         ? "1.55.0.1" // Vietnam test IP
         : realIp;
+    const userAgentRaw = req.headers["user-agent"] || "";
+    const sessionKey = getSessionKey(ip, userAgentRaw);
+
+    const [rows] = await pool.execute(
+      `SELECT shuffle_seed, country, has_picked, picked_amount FROM sessions WHERE session_key = ?`,
+      [sessionKey]
+    );
 
     const geo = geoip.lookup(ip);
     const country = geo?.country || "Unknown";
-
     const options = country === "VN"
       ? [100000, 200000, 260000]
       : [10, 20, 26];
 
-    const amounts = shuffleArray(options);
+    if (rows.length > 0) {
+      const session = rows[0];
+      const amounts = shuffleArrayWithSeed(options, session.shuffle_seed);
+      return res.json({
+        ok: true,
+        amounts,
+        country: session.country || "Unknown",
+        has_picked: !!session.has_picked,
+        picked_amount: session.picked_amount ?? null,
+      });
+    }
+
+    const shuffleSeed = Math.floor(Math.random() * 1e9);
+    const amounts = shuffleArrayWithSeed(options, shuffleSeed);
+
+    const name = req.query?.name || null;
+    await pool.execute(
+      `INSERT INTO sessions (session_key, ip, user_agent_raw, name, shuffle_seed, country)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [sessionKey, ip, userAgentRaw, name, shuffleSeed, country]
+    );
 
     res.json({
       ok: true,
       amounts,
       country,
+      has_picked: false,
+      picked_amount: null,
     });
   } catch (err) {
     console.error(err);
