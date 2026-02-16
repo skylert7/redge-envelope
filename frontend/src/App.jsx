@@ -47,6 +47,12 @@ export default function App() {
   const [envelopeAmounts, setEnvelopeAmounts] = useState(null);
   const [loadingEnvelopes, setLoadingEnvelopes] = useState(false);
   const [isVnd, setIsVnd] = useState(false);
+  const [showFirstPage, setShowFirstPage] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowFirstPage(true), 800);
+    return () => clearTimeout(t);
+  }, []);
 
   const handleStart = async () => {
     const trimmed = nameInput.trim();
@@ -146,7 +152,7 @@ export default function App() {
   const imageWidth = screens.xs ? 120 : screens.sm ? 200 : screens.md ? 260 : 320;
 
   return (
-    <Layout style={{ minHeight: "100dvh", height: "100%", display: "flex", flexDirection: "column", overflow: "auto", background: "#f5f5f0", WebkitOverflowScrolling: "touch" }}>
+    <Layout style={{ minHeight: "100dvh", height: "100%", display: "flex", flexDirection: "column", overflow: "auto", background: "#F4F0DB", WebkitOverflowScrolling: "touch" }}>
       <Content
         style={{
           flex: 1,
@@ -159,7 +165,7 @@ export default function App() {
       >
         <Row justify="center" align="middle" style={{ width: screens.xs ? "100%" : "75%" }}>
           <Col xs={24} sm={20} md={16} lg={12} xl={10}>
-            <div className="main-card-wrapper">
+            <div className={`main-card-wrapper ${showFirstPage ? "first-page-visible" : ""}`}>
               <div className="corner-highlight corner-tl" />
               <div className="corner-highlight corner-tr" />
               <div className="corner-highlight corner-bl" />
@@ -170,7 +176,7 @@ export default function App() {
               style={{
                 textAlign: "center",
                 borderRadius: screens.xs ? 16 : 20,
-                backgroundColor: "#991b1b",
+                backgroundColor: "#C74D4F",
                 padding: screens.xs ? 16 : 24,
               }}
             >
@@ -200,7 +206,7 @@ export default function App() {
                   value={nameInput}
                   onChange={(e) => setNameInput(e.target.value)}
                   onPressEnter={handleStart}
-                  className={`match-btn-width ${screens.xs ? "match-btn-width--mobile" : ""}`}
+                  className={`match-btn-width name-input ${screens.xs ? "match-btn-width--mobile" : ""}`}
                   style={{ marginTop: screens.xs ? 16 : 20, 
                     textAlign: "center",
                     backgroundColor: "#CD071E",

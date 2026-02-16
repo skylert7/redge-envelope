@@ -113,6 +113,19 @@ body {
   }
 }
 
+/* Name input placeholder color */
+.name-input input::placeholder,
+.name-input.ant-input::placeholder {
+  color: #ffda6b !important;
+  opacity: 1;
+}
+.name-input input::-webkit-input-placeholder {
+  color: #ffda6b !important;
+}
+.name-input input::-moz-placeholder {
+  color: #ffda6b !important;
+}
+
 /* Form disappears instantly; envelope transitions in after submit */
 .name-form-section--hidden {
   display: none;
@@ -216,13 +229,13 @@ body {
 .envelope-round-table .envelope-item--background {
   z-index: 1;
   transform: translate(calc(-50% + var(--offset) * 40%), -15%) scale(0.5);
-  opacity: 0.5;
+  opacity: 0.65;
   filter: brightness(0.95);
 }
 
 .envelope-round-table .envelope-item--background:hover {
   z-index: 5;
-  opacity: 0.5;
+  opacity: 0.8;
   filter: brightness(1);
 }
 
@@ -289,9 +302,14 @@ body {
   }
 }
 
-/* Corner highlights on main card */
+/* First page - fade in after delay */
 .main-card-wrapper {
   position: relative;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.main-card-wrapper.first-page-visible {
+  opacity: 1;
 }
 .corner-highlight {
   position: absolute;
